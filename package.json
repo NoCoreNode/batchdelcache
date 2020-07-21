@@ -1,0 +1,32 @@
+{
+  "name": "batchdelcache",
+  "version": "0.0.1",
+  "description": "batch delete module cache in node safely",
+  "main": "batchbdelcache.js",
+  "scripts": {
+    "test": "mocha",
+    "coverage": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
+    "benchmark": "node ./benchmarks/benchmarks.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zhongkai/delcache.git"
+  },
+  "author": "cxtom(cxtom2008@gmail.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cxtom/batchdelcache/issues"
+  },
+  "homepage": "https://github.com/cxtom/batchdelcache#readme",
+  "dependencies": {
+    "callsite": "^1.0.0"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chalk": "^4.1.0",
+    "coveralls": "^3.1.0",
+    "istanbul": "^0.4.5",
+    "mocha": "^8.0.1",
+    "modern-syslog": "^1.2.0"
+  }
+}
