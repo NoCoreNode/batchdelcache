@@ -1,17 +1,17 @@
-# delcache
+# batchdelcache
 
 Delete module cache safely. This project is inspired by [decache](https://github.com/dwyl/decache).
 
-[![Build Status](https://travis-ci.org/zhongkai/delcache.svg?branch=master)](https://travis-ci.org/zhongkai/delcache)
-[![Coverage Status](https://coveralls.io/repos/github/zhongkai/delcache/badge.svg?branch=master)](https://coveralls.io/github/zhongkai/delcache?branch=master)
+[![Build Status](https://travis-ci.org/NoCoreNode/batchdelcache.svg?branch=master)](https://travis-ci.org/NoCoreNode/batchdelcache)
+[![Coverage Status](https://coveralls.io/repos/github/NoCoreNode/batchdelcache/badge.svg?branch=master)](https://coveralls.io/github/NoCoreNode/batchdelcache?branch=master)
 
 ## Installation
 
 ```bash
 # use npm
-npm install delcache
+npm install batchdelcache
 # or use yarn
-yarn global add delcache
+yarn global add batchdelcache
 ```
 
 ## Environment
@@ -26,9 +26,9 @@ Deleting module cache is the precondition of 'hot reloading'. Typically, we dele
 
 However, this method can cause memory leakage. It clears the module cache in `Module._cache` which is referenced by `require.cache`, but it doesn't eliminate the reference in the array of `xxx.parent.children`.
 
-`delcache` provides a way to eliminate both kinds of reference:
+`batchdelcache` provides a way to eliminate both kinds of reference:
 
- `delcache('xxx')`
+ `batchdelcache('xxx')`
 
 In most cases, this is enough to clean up all references, with the following exception:
 
@@ -49,22 +49,22 @@ In most cases, this is enough to clean up all references, with the following exc
 }
 ```
 
-You will find `targetModule` still in the children of `childModuleA` after calling `delcache(targetModule)` in `childModuleB`. In this condition, you can pass `true` as the second argument to `delcache`: `delcache(targetModule, true)`. `delcache` will traverse the whole module tree to delete targetModule from children of every module.
+You will find `targetModule` still in the children of `childModuleA` after calling `batchdelcache(targetModule)` in `childModuleB`. In this condition, you can pass `true` as the second argument to `batchdelcache`: `batchdelcache(targetModule, true)`. `batchdelcache` will traverse the whole module tree to delete targetModule from children of every module.
 
-When passing `rootPath` as the third argument, `delcache` will take it as the starting point. It is a recommended way to save time traversing the module tree.
+When passing `rootPath` as the third argument, `batchdelcache` will take it as the starting point. It is a recommended way to save time traversing the module tree.
 
 ## Usage
 
 Delete cache of target module and clear reference in parent's children:
 
 ```js
-const delcache = require('delcache')
+const batchdelcache = require('batchdelcache')
 
 let five = require('./five')
 
 five.num = 6
 
-delcache('./five')
+batchdelcache(['./five'])
 
 five = require('./five')
 
@@ -74,17 +74,21 @@ console.log(five.num) // 5
 Pass `true` as the second argument to delete cache of target module from the whole module tree.
 
 ```js
-const delcache = require('delcache')
+const batchdelcache = require('batchdelcache')
 
 let five = require('./five')
+let six = require('./six')
 
 five.num = 6
+six.sum = 7
 
-delcache('./five', true)
+batchdelcache(['./five', './six'], true)
 
 five = require('./five')
+six = require('./six')
 
 console.log(five.num) // 5
+console.log(six.num) // 6
 ```
 
 When the second argument is `true`, you can specify the `rootPath` from which clear the reference of the target module.
@@ -92,13 +96,13 @@ When the second argument is `true`, you can specify the `rootPath` from which cl
 This is a recommended way to make the delete operation faster:
 
 ```js
-const delcache = require('delcache')
+const batchdelcache = require('batchdelcache')
 
 let five = require('./five')
 
 five.num = 6
 
-delcache('./five', true, '../../root')
+batchdelcache('./five', true, '../../root')
 
 five = require('./five')
 
@@ -107,7 +111,7 @@ console.log(five.num) // 5
 
 ## Notice
 
-Don't uese `delete require.cache[xxx]` with `delcache`, cause `delcache` will check if a module is referenced by `Module._cache`.
+Don't uese `delete require.cache[xxx]` with `batchdelcache`, cause `batchdelcache` will check if a module is referenced by `Module._cache`.
 
 ```js
 //parent.js
@@ -117,6 +121,6 @@ require('./b')
 require('./mod')
 delete require.cache[require.resolve('./mod')]
 //b.js
-const delcache = require('delcahce')
-delcache('./mod', true) // delcache can not eliminate the reference of mod in children of a.js
+const batchdelcache = require('delcahce')
+batchdelcache('./mod', true) // delcache can not eliminate the reference of mod in children of a.js
 ```

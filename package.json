@@ -10,14 +10,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zhongkai/delcache.git"
+    "url": "git+https://github.com/NoCoreNode/batchdelcache.git"
   },
   "author": "cxtom(cxtom2008@gmail.com)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/cxtom/batchdelcache/issues"
+    "url": "https://github.com/NoCoreNode/batchdelcache/issues"
   },
-  "homepage": "https://github.com/cxtom/batchdelcache#readme",
+  "homepage": "https://github.com/NoCoreNode/batchdelcache#readme",
   "dependencies": {
     "callsite": "^1.0.0"
   },
