@@ -1,6 +1,6 @@
 {
   "name": "batchdelcache",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "batch delete module cache in node safely",
   "main": "batchbdelcache.js",
   "types": "batchbdelcache.d.ts",
