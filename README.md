@@ -121,6 +121,6 @@ require('./b')
 require('./mod')
 delete require.cache[require.resolve('./mod')]
 //b.js
-const batchdelcache = require('delcahce')
+const batchdelcache = require('batchdelcahce')
 batchdelcache('./mod', true) // delcache can not eliminate the reference of mod in children of a.js
 ```

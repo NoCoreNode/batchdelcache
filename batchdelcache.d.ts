@@ -1,3 +1,4 @@
-declare function delcache(modulePathArray: string[], all?: boolean = false, rootPath?: string = ''): boolean
 
-export default delcache
+declare function batchdelcache(modulePathArray: string[], all?: boolean , rootPath?: string): boolean
+
+export default batchdelcache
