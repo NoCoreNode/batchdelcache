@@ -7,7 +7,7 @@ const expect = require('chai').expect
 it('nonexistent module', () => {
     expect(() => {
         delcache('./nonexistent')
-    }).to.not.throw()
+    }).to.throw(/nonexistent/)
 })
 
 it('delete twice', () => {
