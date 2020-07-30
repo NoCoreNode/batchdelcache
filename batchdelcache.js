@@ -131,7 +131,7 @@ function findModule(modulePath) {
     try {
         return require.resolve(modulePath)
     } catch (e) {
-        return ''
+        throw new Error(`[batchdelcache] ${e.stack}`);
     }
 }
 
