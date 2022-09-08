@@ -106,3 +106,10 @@ it('root module', function () {
     }).length
     expect(count).to.be.equal(1)
 })
+
+it('ignore module that is still in use', function () {
+    require('./res/ignore-module-still-in-use/index')
+    expect(require('./res/ignore-module-still-in-use/lib').state.a).to.be.equal(3);
+    delcache('./res/ignore-module-still-in-use/a', true, './res/ignore-module-still-in-use/index')
+    expect(require('./res/ignore-module-still-in-use/lib').state.a).to.be.equal(3);
+})
