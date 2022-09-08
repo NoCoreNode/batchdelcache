@@ -94,13 +94,13 @@ it('nonexistent root module', () => {
     expect(() => {
         require('chalk')
         delcache('chalk', 1, '../../nonexistent')
-    }).to.not.throw()
+    }).to.throw()
 })
 
 it('root module', function () {
     require('./res/seven')
     module.parent.children.push(require.cache[require.resolve('./res/seven')])
-    delcache('./res/seven', 1, module)
+    delcache('./res/seven', 1, module.filename)
     const count = module.parent.children.filter(m => {
         return m.id == require.resolve('./res/seven')
     }).length
