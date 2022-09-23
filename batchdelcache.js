@@ -8,9 +8,8 @@ const callsite = require('callsite')
 
 function batchdelcache(modulePathArray, all = false, rootPath = '') {
 
-    const visitedChildiren = {};
-
     function traverseChildren(mod, cb) {
+        const visitedChildiren = {}
         visitedChildiren[mod.id] = 1
 
         function run(m) {
@@ -29,33 +28,27 @@ function batchdelcache(modulePathArray, all = false, rootPath = '') {
     }
 
     if (!Array.isArray(modulePathArray)) {
-        modulePathArray = [modulePathArray];
+        modulePathArray = [modulePathArray]
     }
 
-    for (const modulePath of modulePathArray) {
-        const moduleRealPath = findModule(modulePath);
+    const modulesToClean = modulePathArray.map(findModule).map(p => require.cache[p]).filter(item => !!item)
+    const topModule = getTopModule(rootPath && findModule(rootPath))
+    const moduleInUse = findAllModuleInUse(modulesToClean, topModule)
 
-        if (!moduleRealPath) {
-            continue;
-        }
-
-        const mod = require.cache[moduleRealPath];
-
-        if (!mod) {
-            continue;
-        }
+    for (const mod of modulesToClean) {
 
         // 删除该模块的所有子引用
         traverseChildren(mod, m => {
-            delete require.cache[m.id];
+            if (!moduleInUse.has(m)) {
+                delete require.cache[m.id];
+            }
         });
-
 
         // 防止内存泄露
         /* istanbul ignore else */
         if (mod.parent) {
             if (all) {
-                clearTree(mod, rootPath);
+                clearFromTree(mod, topModule);
             }
             else {
                 mod.parent.children = mod.parent.children.filter(m => m.id !== mod.id);
@@ -64,50 +57,74 @@ function batchdelcache(modulePathArray, all = false, rootPath = '') {
     }
 }
 
-function clearTree(mod, rootPath) {
-
-    let topModule = null;
+function getTopModule(rootPath) {
+    let topModule = null
 
     if (rootPath) {
         try {
-            topModule = require.cache[require.resolve(rootPath)];
+            topModule = require.cache[require.resolve(rootPath)]
         }
-        catch(e) {}
+        catch(e) {
+            throw Error('top module is not found.')
+        }
     }
     else {
-        topModule = mod;
+        topModule = module
 
         while (topModule.parent) {
-            topModule = topModule.parent;
+            topModule = topModule.parent
         }
     }
 
-    if (topModule) {
-        traverseTree(topModule, m => m.id == mod.id); // true to delete
-    }
+    return topModule
 }
 
-function traverseTree(root, cb) {
-    const visitedTreeChildren = {};
-    visitedTreeChildren[root.id] = 1;
-    function run(mod) {
-        mod.children = mod.children.filter(child => {
-            if (cb(child)) {
-                return false
-            }
-            else {
-                if(!visitedTreeChildren[child.id]) {
-                    visitedTreeChildren[child.id] = 1;
-                    run(child);
+function clearFromTree(mod, topModule) {
+    traverseTree(topModule, m => m.id == mod.id); // true to delete
+
+    function traverseTree(root, cb) {
+        const visitedTreeChildren = {};
+        visitedTreeChildren[root.id] = 1;
+        function run(mod) {
+            mod.children = mod.children.filter(child => {
+                if (cb(child)) {
+                    return false
                 }
-                return true;
-            }
-        })
+                else {
+                    if(!visitedTreeChildren[child.id]) {
+                        visitedTreeChildren[child.id] = 1;
+                        run(child);
+                    }
+                    return true;
+                }
+            })
+        }
+        run(root);
     }
-    run(root);
 }
 
+/**
+ * 找到所有还在使用的模块
+ */
+function findAllModuleInUse(moduleRealPathArray, topModule) {
+    const moduleRealPathSet = new Set(moduleRealPathArray)
+    const moduleInUse = new Set()
+    moduleInUse.add(topModule)
 
+    function run(mod) {
+        for (const child of mod.children) {
+            if (moduleInUse.has(child) || moduleRealPathSet.has(child)) {
+                continue
+            }
+
+            moduleInUse.add(child)
+            run(child)
+        }
+    }
+    run(topModule)
+
+    return moduleInUse
+}
 
 function findModule(modulePath) {
 
@@ -121,6 +138,9 @@ function findModule(modulePath) {
             /* istanbul ignore else */
             if (filename == module.filename) {
                 visited = true
+            }
+            else if (!filename) {
+                continue
             }
             else if (filename !== module.filename && filename !== 'module.js' && visited) {
                 modulePath = path.resolve(path.dirname(filename), modulePath)
